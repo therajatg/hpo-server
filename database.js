@@ -67,10 +67,16 @@ export default class Database {
   async read(searchText) {
     await this.connect();
     const request = this.poolconnection.request();
-    const result = await request
-      //   .input("id", sql.Int, +id)
-      .query(`SELECT * FROM term WHERE HP_Terms LIKE '%${searchText}%'`);
-    return result.recordset;
+    const termsResult = await request.query(
+      `SELECT * FROM term WHERE HP_Terms LIKE '%${searchText}%' OR Description LIKE '%${searchText}%'`
+    );
+    const diseaseResult = await request.query(
+      `SELECT * FROM disease WHERE disease_id LIKE '%${searchText}%' OR disease_name LIKE '%${searchText}%'`
+    );
+    return {
+      termData: termsResult.recordset,
+      diseaseData: diseaseResult.recordset,
+    };
   }
 
   async update(id, data) {

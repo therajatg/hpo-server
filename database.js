@@ -67,6 +67,71 @@ export default class Database {
   async read(searchText) {
     await this.connect();
     const request = this.poolconnection.request();
+
+    if (searchText.toLowerCase().includes("or")) {
+      const searchTextArr = searchText
+        .toLowerCase()
+        .split(" or ")
+        .map((text) => text.trim());
+      const termCondition = searchTextArr
+        .map(
+          (term) =>
+            `(HP_Terms LIKE '%${term}%' OR Description LIKE '%${term}%')`
+        )
+        .join(" OR ");
+
+      const diseaseCondition = searchTextArr
+        .map(
+          (disease) =>
+            `(disease_id LIKE '%${disease}%' OR disease_name LIKE '%${disease}%')`
+        )
+        .join(" OR ");
+
+      const termsResult = await request.query(
+        `SELECT * FROM term WHERE ${termCondition}`
+      );
+      const diseaseResult = await request.query(
+        `SELECT * FROM disease WHERE ${diseaseCondition}`
+      );
+
+      return {
+        termData: termsResult.recordset,
+        diseaseData: diseaseResult.recordset,
+      };
+    }
+
+    if (searchText.toLowerCase().includes("and")) {
+      const searchTextArr = searchText
+        .toLowerCase()
+        .split(" and ")
+        .map((text) => text.trim());
+      const termCondition = searchTextArr
+        .map(
+          (term) =>
+            `(HP_Terms LIKE '%${term}%' OR Description LIKE '%${term}%')`
+        )
+        .join(" AND ");
+
+      const diseaseCondition = searchTextArr
+        .map(
+          (disease) =>
+            `(disease_id LIKE '%${disease}%' OR disease_name LIKE '%${disease}%')`
+        )
+        .join(" AND ");
+
+      const termsResult = await request.query(
+        `SELECT * FROM term WHERE ${termCondition}`
+      );
+      const diseaseResult = await request.query(
+        `SELECT * FROM disease WHERE ${diseaseCondition}`
+      );
+
+      return {
+        termData: termsResult.recordset,
+        diseaseData: diseaseResult.recordset,
+      };
+    }
+
     const termsResult = await request.query(
       `SELECT * FROM term WHERE HP_Terms LIKE '%${searchText}%' OR Description LIKE '%${searchText}%'`
     );

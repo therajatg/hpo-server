@@ -9,8 +9,16 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.get("/", (req, res) => res.status(201).json("Welcome to Hogwarts"));
+
 app.get("/:searchText", (req, res) => {
+  // searchText.split(' ')
   const searchText = req.params.searchText;
+  // const searchTextArr = []
+  // if ("and" in searchText) {
+  //   searchTextArr = searchText.split(" and ");
+  // }
+  // console.log(searchText);
   const database = new Database(config);
   database
     .read(searchText)
